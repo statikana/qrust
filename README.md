@@ -17,3 +17,9 @@ Current progress:
 - [ ] `compile`
 
 Next step: Finish implementing the `builder` calls for the basic AST Node types.
+
+Feature checklist:
+
+- [ ] Functions
+- [ ] Actual sized integers and floats (currently, everything is 64 bit) (see clif/src/type_layouts/float.rs and integer.rs)
+- [ ] ...
