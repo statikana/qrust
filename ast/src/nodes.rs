@@ -8,50 +8,51 @@ pub struct Span {
     pub end: u32,
 }
 
-// Node<() > = Untyped node (ASTNode)
-// Node<Type> = Typed node (TypedNode), made by the typechecker (see the `typed` crate)
-pub struct Node<T = ()> {
-    pub kind: NodeKind<T>,
+// Node<()>   = UntypedNode, made by the ASTVisitor
+// Node<Type> = TypedNode, made by the typechecker (see the `typed` crate)
+pub struct Node<Ty = ()> {
+    pub kind: NodeKind<Ty>,
     pub span: Span,
-    pub dtype: T,
+    /// the node's type: `()` before typechecking, `typed::types::Type` after
+    pub ty: Ty,
 }
 
-pub type ASTNode = Node<()>;
+pub type UntypedNode = Node<()>;
 
-impl ASTNode {
-    pub fn new(kind: NodeKind<()>, span: Span) -> ASTNode {
+impl UntypedNode {
+    pub fn new(kind: NodeKind<()>, span: Span) -> UntypedNode {
         Node {
             kind,
             span,
-            dtype: (),
+            ty: (),
         }
     }
 }
 
 /// every kind of node. a closed set, so later passes (e.g. the typechecker) can `match` on it exhaustively
-pub enum NodeKind<T = ()> {
+pub enum NodeKind<Ty = ()> {
     Scope {
-        statements: Vec<Node<T>>,
+        statements: Vec<Node<Ty>>,
     },
     BinaryOperation {
         op: BinaryOperator,
-        lhs: Box<Node<T>>,
-        rhs: Box<Node<T>>,
+        lhs: Box<Node<Ty>>,
+        rhs: Box<Node<Ty>>,
     },
     UnaryOperation {
         op: UnaryOperator,
-        subject: Box<Node<T>>,
+        subject: Box<Node<Ty>>,
     },
     Boolean(bool),
-    Integer(i128),
+    Integer(i64),
     Float(f64),
     Unit,
     Matrix {
-        elements: Vec<Node<T>>,
+        elements: Vec<Node<Ty>>,
     },
 }
 
-impl<T> NodeKind<T> {
+impl<Ty> NodeKind<Ty> {
     /// used as the node's label when printing
     pub fn name(&self) -> &'static str {
         match self {
@@ -67,9 +68,9 @@ impl<T> NodeKind<T> {
     }
 }
 
-impl<T> NodeKind<T>
+impl<Ty> NodeKind<Ty>
 where
-    Node<T>: fmt::Debug,
+    Node<Ty>: fmt::Debug,
 {
     /// formats this node under `label`
     pub fn fmt_labeled(&self, label: &str, f: &mut fmt::Formatter<'_>) -> fmt::Result {

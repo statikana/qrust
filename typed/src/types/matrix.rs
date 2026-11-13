@@ -6,24 +6,24 @@ use super::{Type, TypeAlgebra};
 // display
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct MatrixType {
+pub struct MatrixTypeSpec {
     pub shape: Vec<usize>,
-    pub dtype: Box<Type>,
+    pub element_type: Box<Type>,
 }
 
-impl MatrixType {
+impl MatrixTypeSpec {
     /// element-wise operations are performed on every element
-    /// so the dtype of this array is the result of `self.dtype` and `rhs`
+    /// so the element type of the result is `self.element_type` and `rhs`
     /// under `op`
     fn elementwise(&self, op: fn(&Type, &Type) -> Option<Type>, rhs: &Type) -> Option<Type> {
-        Some(Type::Matrix(MatrixType {
+        Some(Type::Matrix(MatrixTypeSpec {
             shape: self.shape.clone(),
-            dtype: Box::new(op(&*self.dtype, rhs).unwrap()),
+            element_type: Box::new(op(&*self.element_type, rhs).unwrap()),
         }))
     }
 }
 
-impl TypeAlgebra for MatrixType {
+impl TypeAlgebra for MatrixTypeSpec {
     // element-wise ops
     fn add(&self, rhs: &Type) -> Option<Type> {
         self.elementwise(TypeAlgebra::add, rhs)
@@ -39,9 +39,9 @@ impl TypeAlgebra for MatrixType {
     }
 }
 
-impl fmt::Display for MatrixType {
+impl fmt::Display for MatrixTypeSpec {
     // shape, then element type, e.g. `[2, 3]f64`
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}{}", self.shape, self.dtype)
+        write!(f, "{:?}{}", self.shape, self.element_type)
     }
 }

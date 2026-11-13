@@ -5,19 +5,19 @@ pub mod integer;
 pub mod matrix;
 pub mod ptr;
 
-pub use float::FloatType;
-pub use integer::IntegerType;
-pub use matrix::MatrixType;
-pub use ptr::PtrType;
+pub use float::FloatTypeSpec;
+pub use integer::IntegerTypeSpec;
+pub use matrix::MatrixTypeSpec;
+pub use ptr::PtrTypeSpec;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Type {
     Unit,
     Boolean,
-    Integer(IntegerType),
-    Float(FloatType),
-    Ptr(PtrType),
-    Matrix(MatrixType),
+    Integer(IntegerTypeSpec),
+    Float(FloatTypeSpec),
+    Ptr(PtrTypeSpec),
+    Matrix(MatrixTypeSpec),
 }
 
 /// arithmetic rules for a type, one method per operator. `None` (the default) means the operation isn't supported
@@ -45,8 +45,8 @@ pub trait TypeAlgebra {
 }
 
 impl Type {
-    /// the `Numeric` impl of the type inside, if it has one
-    fn numeric(&self) -> Option<&dyn TypeAlgebra> {
+    /// the `TypeAlgebra` impl of the type inside, if it has one
+    fn algebra(&self) -> Option<&dyn TypeAlgebra> {
         match self {
             Type::Unit => None,
             Type::Boolean => None,
@@ -60,17 +60,17 @@ impl Type {
     /// applies the binary operation `op` to `self` and `rhs`
     fn binary(&self, rhs: &Type, op: fn(&dyn TypeAlgebra, &Type) -> Option<Type>) -> Option<Type> {
         match (self, rhs) {
-            // (Type::Matrix(_), _) => op(self.numeric()?, rhs),
+            // (Type::Matrix(_), _) => op(self.algebra()?, rhs),
             // // scalar op matrix: broadcast the scalar over the matrix's elements
-            // (_, Type::Matrix(m)) => Some(m.with_dtype(self.binary(&m.dtype, op)?)),
-            _ => op(self.numeric()?, rhs),
+            // (_, Type::Matrix(m)) => Some(m.with_element_type(self.binary(&m.element_type, op)?)),
+            _ => op(self.algebra()?, rhs),
         }
     }
 }
 
 impl TypeAlgebra for Type {
     fn negate(&self) -> Option<Type> {
-        self.numeric()?.negate()
+        self.algebra()?.negate()
     }
     fn add(&self, rhs: &Type) -> Option<Type> {
         self.binary(rhs, |t, rhs| t.add(rhs))

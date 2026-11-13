@@ -4,23 +4,23 @@ use std::fmt;
 use super::{Type, TypeAlgebra};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct FloatType {
-    pub nbytes: usize,
+pub struct FloatTypeSpec {
+    pub size_bytes: usize,
 }
 
-impl FloatType {
+impl FloatTypeSpec {
     // float with float: widened to the larger side
     fn arithmetic(&self, rhs: &Type) -> Option<Type> {
         match rhs {
-            Type::Float(rhs) => Some(Type::Float(FloatType {
-                nbytes: max(self.nbytes, rhs.nbytes),
+            Type::Float(rhs) => Some(Type::Float(FloatTypeSpec {
+                size_bytes: max(self.size_bytes, rhs.size_bytes),
             })),
             _ => None,
         }
     }
 }
 
-impl TypeAlgebra for FloatType {
+impl TypeAlgebra for FloatTypeSpec {
     fn negate(&self) -> Option<Type> {
         Some(Type::Float(self.clone()))
     }
@@ -39,8 +39,8 @@ impl TypeAlgebra for FloatType {
     }
 }
 
-impl fmt::Display for FloatType {
+impl fmt::Display for FloatTypeSpec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "f{}", self.nbytes * 8)
+        write!(f, "f{}", self.size_bytes * 8)
     }
 }

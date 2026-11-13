@@ -14,3 +14,4 @@ target-lexicon = "0.13.5"
 # ast dependency is needed to implement instructions for each node type
 ast = { path="../ast" }
 typed = { path="../typed" }
+log.workspace = true

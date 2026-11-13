@@ -4,25 +4,25 @@ use std::fmt;
 use super::{Type, TypeAlgebra};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct IntegerType {
+pub struct IntegerTypeSpec {
     pub signed: bool,
-    pub nbytes: usize,
+    pub size_bytes: usize,
 }
 
-impl IntegerType {
+impl IntegerTypeSpec {
     // integer with integer: signed if either side is, widened to the larger side
     fn arithmetic(&self, rhs: &Type) -> Option<Type> {
         match rhs {
-            Type::Integer(rhs) => Some(Type::Integer(IntegerType {
+            Type::Integer(rhs) => Some(Type::Integer(IntegerTypeSpec {
                 signed: self.signed || rhs.signed,
-                nbytes: max(self.nbytes, rhs.nbytes),
+                size_bytes: max(self.size_bytes, rhs.size_bytes),
             })),
             _ => None,
         }
     }
 }
 
-impl TypeAlgebra for IntegerType {
+impl TypeAlgebra for IntegerTypeSpec {
     // negation only makes sense for signed integers
     fn negate(&self) -> Option<Type> {
         self.signed.then(|| Type::Integer(self.clone()))
@@ -42,13 +42,13 @@ impl TypeAlgebra for IntegerType {
     }
 }
 
-impl fmt::Display for IntegerType {
+impl fmt::Display for IntegerTypeSpec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "{}{}",
             if self.signed { "i" } else { "u" },
-            self.nbytes * 8
+            self.size_bytes * 8
         )
     }
 }

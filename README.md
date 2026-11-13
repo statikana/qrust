@@ -1,12 +1,14 @@
 # qrust
 
 1. `parse`: Compiles `Qrust.g4` into a node visitor using antlr4rust
-2. `ast`: Creates `ASTVisitor`, exhausts the tree and creates a base untyped AST with `ASTNode`
+2. `ast`: Creates `ASTVisitor`, exhausts the tree and creates a base untyped AST with `UntypedNode`
 3. `typed`: Travels across the untyped AST and applies type TypeAlgebra rules to each node recursively, generated `TypedNode`
 4. `clif`: Travels the typed AST and and transforms it into clif using cranelift
 5. `compile`: Compiles the generated clif code into an executable binary
 
 `run` serves as an entrypoint to the program, taking an input file and sending it through the pipeline.
+
+If you use NixOS, run `nix develop` then open your IDE and `rust-analyzer` should work, and you should be able to run everything.
 
 Current progress:
 

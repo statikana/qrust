@@ -16,9 +16,27 @@ impl DebugTypeAnnotation for () {
     }
 }
 
-impl<T: DebugTypeAnnotation> fmt::Debug for Node<T> {
+impl<Ty: DebugTypeAnnotation> fmt::Debug for Node<Ty> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let label = self.dtype.format_label(self.kind.name(), self.span);
+        let label = self.ty.format_label(self.kind.name(), self.span);
         self.kind.fmt_labeled(&label, f)
     }
+}
+
+/// Logs a single ANTLR visitor step with compact, single-line source text.
+pub fn log_visit(target: &str, rule: &str, span: Span, text: &str) {
+    const MAX_TEXT_LEN: usize = 60;
+    let collapsed: String = text.split_whitespace().collect::<Vec<_>>().join(" ");
+    let preview = if collapsed.chars().count() > MAX_TEXT_LEN {
+        let truncated: String = collapsed.chars().take(MAX_TEXT_LEN - 3).collect();
+        format!("{truncated}...")
+    } else {
+        collapsed
+    };
+    log::trace!(
+        target: target,
+        "[visit] {rule:<20} span={}..{} text={preview:?}",
+        span.start,
+        span.end
+    );
 }

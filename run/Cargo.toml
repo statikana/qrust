@@ -7,7 +7,11 @@ edition = "2024"
 parse={ path="../parse" }
 ast={ path="../ast" }
 typed={ path="../typed" }
+clif={ path="../clif" }
+cranelift-frontend = "0.137.1"
+cranelift-codegen = "0.137.1"
 antlr-rust="0.3.0-beta"
+log.workspace = true
 
 [[bin]]
 name="qrust-run"
