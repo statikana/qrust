@@ -2624,7 +2624,7 @@ where
                 recog.base.set_state(76);
                 recog.err_handler.sync(&mut recog.base)?;
                 _la = recog.base.input.la(1);
-                if (((_la) & !0x3f) == 0
+                if ((_la) & !0x3f) == 0
                     && ((1usize << _la)
                         & ((1usize << T__4)
                             | (1usize << TRUE)
@@ -2633,7 +2633,7 @@ where
                             | (1usize << REAL)
                             | (1usize << SUB)
                             | (1usize << PAREN_L)))
-                        != 0)
+                        != 0
                 {
                     {
                         /*InvokeRule term*/
