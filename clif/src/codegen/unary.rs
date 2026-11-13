@@ -3,9 +3,9 @@ use ast::operator::UnaryOperator::{self, Negate};
 use cranelift_codegen::ir::{self, InstBuilder};
 use typed::{typecheck::TypedNode, types::{Type, TypeAlgebra}};
 
-use crate::codegen::{Codegen, CodegenError, debug};
+use crate::codegen::{FunctionCodegen, CodegenError, debug};
 
-impl Codegen<'_> {
+impl FunctionCodegen<'_> {
     pub(crate) fn try_build_unary(
         &mut self,
         op: &UnaryOperator,

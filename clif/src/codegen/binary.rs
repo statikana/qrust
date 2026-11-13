@@ -3,9 +3,9 @@ use ast::operator::BinaryOperator;
 use cranelift_codegen::ir::{self, InstBuilder};
 use typed::{typecheck::TypedNode, types::{Type, TypeAlgebra}};
 
-use crate::codegen::{Codegen, CodegenError, debug};
+use crate::codegen::{FunctionCodegen, CodegenError, debug};
 
-impl Codegen<'_> {
+impl FunctionCodegen<'_> {
     // TODO: this currently bases the operation based on the output (i.e. if the output is an integer, lhs and rhs must both be intergers).
     // not sure about this validity.
 

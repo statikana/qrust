@@ -11,7 +11,7 @@ pub mod error;
 
 use ast::nodes::{NodeKind, Span};
 use cranelift_codegen::ir::{self, Function, InstBuilder};
-use cranelift_codegen::ir::types::I8;
+use cranelift_codegen::ir::types::{I8, I32};
 use cranelift_codegen::isa::CallConv;
 use cranelift_frontend::{FunctionBuilder, FunctionBuilderContext};
 use typed::typecheck::TypedNode;
@@ -63,14 +63,14 @@ impl HasLayout for Type {
 }
 
 
-pub struct Codegen<'a> {
+pub struct FunctionCodegen<'a> {
     pub builder: FunctionBuilder<'a>,
     pub target: Target,
 }
 
-impl<'a> Codegen<'a> {
-    pub fn new(function: &'a mut Function, ctx: &'a mut FunctionBuilderContext) -> Self {
-        let builder = FunctionBuilder::new(function, ctx);
+impl<'a> FunctionCodegen<'a> {
+    pub fn new(function: &'a mut Function, fn_ctx: &'a mut FunctionBuilderContext) -> Self {
+        let builder = FunctionBuilder::new(function, fn_ctx);
 
         // for my intel 12700H
         let target = Target {
@@ -79,20 +79,21 @@ impl<'a> Codegen<'a> {
             simd_register_bits: 256,
             page_width_bits: 4096 * 8
         };
-        Codegen { builder, target }
+        FunctionCodegen { builder, target }
     }
 
     /// inserts the `node`'s instructions into its own function, which when called, returns the value of the node.
     /// this function cannot take any parameters, and doesn't return a value if the `layout` of the node is None
-    pub fn build_standalone(&mut self, node: &TypedNode) {
-        if let Err(err) = self.try_build_standalone(node) {
+    pub fn build_standalone(&mut self, node: &TypedNode, default_return_0: bool) {
+        if let Err(err) = self.try_build_standalone(node, default_return_0) {
             panic!("CLIF codegen failed: {err}");
         }
     }
 
     /// fallible version of [`Codegen::build_standalone`] that logs and returns structured [`CodegenError`]s.
-    pub fn try_build_standalone(&mut self, node: &TypedNode) -> Result<(), CodegenError> {
+    pub fn try_build_standalone(&mut self, node: &TypedNode, default_return_0: bool) -> Result<(), CodegenError> {
         let block = self.builder.create_block();
+            
 
         // first, determine return parameters
         let node_layout = node.ty.layout(&self.target);
@@ -134,6 +135,9 @@ impl<'a> Codegen<'a> {
                 return Err(err);
             };
             self.builder.ins().return_(&[ret_val]);
+        } else if default_return_0 {
+            let default_return = self.builder.ins().iconst(I32, 0);
+            self.builder.ins().return_(&[default_return]);
         } else {
             self.builder.ins().return_(&[]);
         }
@@ -246,7 +250,7 @@ mod tests {
     use typed::typecheck::TypedNode;
     use typed::types::{FloatTypeSpec, IntegerTypeSpec, MatrixTypeSpec, Type};
 
-    use super::{Codegen, CodegenError};
+    use super::{FunctionCodegen, CodegenError};
 
     struct RecordedLog {
         level: Level,
@@ -339,7 +343,7 @@ mod tests {
         let (res, logs) = with_captured_logs(|| {
             let mut func = Function::new();
             let mut ctx = FunctionBuilderContext::new();
-            let mut codegen = Codegen::new(&mut func, &mut ctx);
+            let mut codegen = FunctionCodegen::new(&mut func, &mut ctx);
             let r = codegen.try_build_standalone(&ast);
             codegen.try_finalize().unwrap();
             r
@@ -377,7 +381,7 @@ mod tests {
         let (res, logs) = with_captured_logs(|| {
             let mut func = Function::new();
             let mut ctx = FunctionBuilderContext::new();
-            let mut codegen = Codegen::new(&mut func, &mut ctx);
+            let mut codegen = FunctionCodegen::new(&mut func, &mut ctx);
             codegen.try_build_standalone(&ast)
         });
 
@@ -407,7 +411,7 @@ mod tests {
         let (res, logs) = with_captured_logs(|| {
             let mut func = Function::new();
             let mut ctx = FunctionBuilderContext::new();
-            let mut codegen = Codegen::new(&mut func, &mut ctx);
+            let mut codegen = FunctionCodegen::new(&mut func, &mut ctx);
             codegen.try_build_standalone(&ast)
         });
 
@@ -440,7 +444,7 @@ mod tests {
         let (res, logs) = with_captured_logs(|| {
             let mut func = Function::new();
             let mut ctx = FunctionBuilderContext::new();
-            let mut codegen = Codegen::new(&mut func, &mut ctx);
+            let mut codegen = FunctionCodegen::new(&mut func, &mut ctx);
             codegen.try_build_standalone(&ast)
         });
 
@@ -475,7 +479,7 @@ mod tests {
         let (res, logs) = with_captured_logs(|| {
             let mut func = Function::new();
             let mut ctx = FunctionBuilderContext::new();
-            let mut codegen = Codegen::new(&mut func, &mut ctx);
+            let mut codegen = FunctionCodegen::new(&mut func, &mut ctx);
             codegen.try_build_standalone(&ast)
         });
 
@@ -491,7 +495,7 @@ mod tests {
         let (res, logs) = with_captured_logs(|| {
             let mut func = Function::new();
             let mut ctx = FunctionBuilderContext::new();
-            let mut codegen = Codegen::new(&mut func, &mut ctx);
+            let mut codegen = FunctionCodegen::new(&mut func, &mut ctx);
             codegen.target.pointer_bits = 128;
             codegen.try_finalize()
         });

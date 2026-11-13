@@ -2,7 +2,7 @@ use ast::nodes::{NodeKind, Span};
 use cranelift_codegen::ir::{self, InstBuilder, StackSlotData, immediates::Offset32};
 use typed::{typecheck::TypedNode, types::{MatrixTypeSpec, Type}};
 
-use crate::codegen::{Codegen, CodegenError};
+use crate::codegen::{FunctionCodegen, CodegenError};
 
 use super::{HasLayout, Layout, Target, debug};
 
@@ -71,7 +71,7 @@ pub(crate) fn diagnose_type_layout(ty: &Type, target: &Target) -> &'static str {
     }
 }
 
-impl Codegen<'_> {
+impl FunctionCodegen<'_> {
     pub(crate) fn try_build_matrix(
         &mut self,
         ty: &Type,

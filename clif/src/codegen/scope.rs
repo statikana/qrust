@@ -1,9 +1,9 @@
 use cranelift_codegen::ir;
 use typed::{typecheck::TypedNode, types::Type};
 
-use crate::codegen::{Codegen, CodegenError, debug};
+use crate::codegen::{CodegenError, FunctionCodegen, debug};
 
-impl Codegen<'_> {
+impl FunctionCodegen<'_> {
     pub(crate) fn try_build_scope(
         &mut self,
         _ty: &Type,
