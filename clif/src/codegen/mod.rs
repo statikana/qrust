@@ -344,7 +344,7 @@ mod tests {
             let mut func = Function::new();
             let mut ctx = FunctionBuilderContext::new();
             let mut codegen = FunctionCodegen::new(&mut func, &mut ctx);
-            let r = codegen.try_build_standalone(&ast);
+            let r = codegen.try_build_standalone(&ast, false);
             codegen.try_finalize().unwrap();
             r
         });
@@ -382,7 +382,7 @@ mod tests {
             let mut func = Function::new();
             let mut ctx = FunctionBuilderContext::new();
             let mut codegen = FunctionCodegen::new(&mut func, &mut ctx);
-            codegen.try_build_standalone(&ast)
+            codegen.try_build_standalone(&ast, false)
         });
 
         assert!(matches!(
@@ -412,7 +412,7 @@ mod tests {
             let mut func = Function::new();
             let mut ctx = FunctionBuilderContext::new();
             let mut codegen = FunctionCodegen::new(&mut func, &mut ctx);
-            codegen.try_build_standalone(&ast)
+            codegen.try_build_standalone(&ast, false)
         });
 
         assert!(matches!(
@@ -445,7 +445,7 @@ mod tests {
             let mut func = Function::new();
             let mut ctx = FunctionBuilderContext::new();
             let mut codegen = FunctionCodegen::new(&mut func, &mut ctx);
-            codegen.try_build_standalone(&ast)
+            codegen.try_build_standalone(&ast, false)
         });
 
         assert!(matches!(res, Err(CodegenError::InvalidTypeAlgebra { .. })));
@@ -480,7 +480,7 @@ mod tests {
             let mut func = Function::new();
             let mut ctx = FunctionBuilderContext::new();
             let mut codegen = FunctionCodegen::new(&mut func, &mut ctx);
-            codegen.try_build_standalone(&ast)
+            codegen.try_build_standalone(&ast, false)
         });
 
         assert!(matches!(res, Err(CodegenError::MissingLayout { .. })));

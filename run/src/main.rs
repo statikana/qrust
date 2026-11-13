@@ -12,8 +12,8 @@ use clif::codegen::FunctionCodegen;
 use parse::qrustvisitor::QrustVisitorCompat;
 use typed::typecheck;
 
-use cranelift_codegen::{Context, ir::{self, Function, Signature, types::I32}, settings::{self, Configurable}, verify_function};
-use cranelift_frontend::{FunctionBuilder, FunctionBuilderContext};
+use cranelift_codegen::{ir::{self, types::I32}, settings::{self, Configurable}, verify_function};
+use cranelift_frontend::FunctionBuilderContext;
 
 use cranelift_object::{ObjectBuilder, ObjectModule};
 use cranelift_module::{Linkage, Module, default_libcall_names};
@@ -136,4 +136,36 @@ fn main() {
         "Codegen finished in {:?}",
         t_compile_start.elapsed()
     );
+
+    log::debug!("IR:\n{}", mod_ctx.func.display());
+
+    // verify IR code
+    let flags = settings::Flags::new(settings::builder());
+    let verify_r = verify_function(&mod_ctx.func, &flags);
+    if let Err(error) = verify_r {
+        log::error!("Could not verify IR: {:?}", error);
+    } else {
+        log::info!("Verify IR OK")
+    }
+
+    // emit bytecode
+    let out = module.finish().emit().unwrap();
+    let obj_out = "./output.o";
+    let bin_out_fp = "./output";
+    let write_r = std::fs::write(obj_out, out);
+    if let Err(error) = write_r {
+        log::error!("Couldn't write output to {obj_out}, {:?}", error);
+    } else {
+        log::info!("Emitted to {obj_out}")
+    }
+
+    let mut proc = std::process::Command::new("cc");
+    proc.args([obj_out, "-o", bin_out_fp]);
+
+    if let Err(error) = proc.status() {
+        log::error!("Could not build: {:?}", error);
+    }
+    log::info!("Running {bin_out_fp}...");
+    std::process::Command::new(bin_out_fp);
+    log::info!("Done running {bin_out_fp}");
 }
